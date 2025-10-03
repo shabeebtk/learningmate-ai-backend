@@ -4,8 +4,14 @@ from accounts.views.user_auth_views import (
     VerifySignupOTPAPIView,
     UserLoginAPIView,
     ForgotPasswordAPIView,
-    ResetPasswordAPIView
+    ResetPasswordAPIView,
+    TokenRefreshAPIView
 )
+from accounts.views.user_google_auth_views import (
+    GoogleLoginUrlView,
+    GoogleAuthCallbackView
+)
+from accounts.views.user_views import GetUserDetails
 
 # base url - /user/
 
@@ -15,4 +21,12 @@ urlpatterns = [
     path('login', UserLoginAPIView.as_view()),
     path('forgot/password', ForgotPasswordAPIView.as_view()),
     path('reset/password', ResetPasswordAPIView.as_view()),
+    path('token/refresh', TokenRefreshAPIView.as_view()),
+    
+    # google auth 
+    path('auth/google/login/url', GoogleLoginUrlView.as_view()),
+    path('auth/google/callback', GoogleAuthCallbackView.as_view()),
+    
+    # user details 
+    path('details', GetUserDetails.as_view())
 ]

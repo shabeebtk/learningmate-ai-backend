@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -25,16 +25,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # third party apps 
+    'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist', 
+    'corsheaders',
     
     # my apps
     'accounts',
-    'rest_framework',
-    
+    'learn',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -125,6 +127,11 @@ SIMPLE_JWT = {
 }
 
 
+# CORS config
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # dev
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -167,3 +174,13 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+
+# integrations config 
+GOOGLE_AUTH_CLIENT_ID = os.getenv('GOOGLE_AUTH_CLIENT_ID')
+GOOGLE_AUTH_CLIENT_SECRET = os.getenv('GOOGLE_AUTH_CLIENT_SECRET')
+GOOGLE_AUTH_SCOPE = os.getenv('GOOGLE_AUTH_SCOPE')
+GOOGLE_CALLBACK_URI = os.getenv('GOOGLE_CALLBACK_URI')
+
+
+# openAI API 
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

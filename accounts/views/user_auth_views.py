@@ -4,13 +4,11 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from accounts.models import (
     MyUsers, UserProfile
 )
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from accounts.serializers.user_serializers import UserSerializer
 from utils.response import response_data
 from utils.validations import is_valid_email, is_valid_password
@@ -326,3 +324,42 @@ class ResetPasswordAPIView(APIView):
             message="Password has been reset successfully. Please login with your new password.",
             status_code=200
         )
+
+
+
+
+class TokenRefreshAPIView(APIView):
+    """
+    API view to refresh JWT access token using a valid refresh token.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh_token")
+
+        if not refresh_token:
+            return response_data(
+                success=False,
+                message="Refresh token is required",
+                status_code=400
+            )
+
+        try:
+            # Attempt to create a new access token from the refresh token
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            return response_data(
+                success=True,
+                message="Access token refreshed successfully",
+                data={"access_token": access_token},
+                status_code=200
+            )
+
+        except TokenError as e:
+            return response_data(
+                success=False,
+                message="Invalid or expired refresh token",
+                error=str(e),
+                status_code=401
+            )

@@ -66,7 +66,7 @@ def profile_img_upload_to(instance, filename):
 class UserProfile(models.Model):
     user = models.OneToOneField(MyUsers, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(max_length=100, blank=True, null=True)
-    profile_img = CloudinaryField('image', blank=True, null=True)
+    profile_img = CloudinaryField('image', folder="users/profile", blank=True, null=True)
     
     def __str__(self):
         return f"{self.user.email} - {self.name}"
