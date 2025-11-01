@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from accounts.models import (
     MyUsers, UserProfile
 )
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from accounts.serializers.user_serializers import UserSerializer
 from utils.response import response_data
@@ -86,7 +86,10 @@ class UserSignupAPIView(APIView):
                 return response_data(
                     success=True,
                     message="Enter OTP to complete the Signup",
-                    data={"email": user.email},
+                    data={
+                        "email": user.email,
+                        "verification_required" : True
+                    },
                     status_code=200
                 )
 
@@ -204,7 +207,10 @@ class UserLoginAPIView(APIView):
             return response_data(
                 success=True,
                 message="Login success please verify the email",
-                data={"email": user.email},
+                data={
+                    "email": user.email,
+                    "verification_required" : True
+                },
                 status_code=200
             )
             
@@ -362,4 +368,26 @@ class TokenRefreshAPIView(APIView):
                 message="Invalid or expired refresh token",
                 error=str(e),
                 status_code=401
+            )
+            
+            
+
+class UserLogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return response_data(
+                success=True,
+                message="Logout successful",
+                status_code=200
+            )
+        except Exception:
+            return response_data(
+                success=False,
+                message="Invalid token",
+                status_code=400
             )

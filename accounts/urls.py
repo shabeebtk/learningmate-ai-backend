@@ -5,7 +5,8 @@ from accounts.views.user_auth_views import (
     UserLoginAPIView,
     ForgotPasswordAPIView,
     ResetPasswordAPIView,
-    TokenRefreshAPIView
+    TokenRefreshAPIView,
+    UserLogoutAPIView
 )
 from accounts.views.user_google_auth_views import (
     GoogleLoginUrlView,
@@ -22,6 +23,7 @@ urlpatterns = [
     path('forgot/password', ForgotPasswordAPIView.as_view()),
     path('reset/password', ResetPasswordAPIView.as_view()),
     path('token/refresh', TokenRefreshAPIView.as_view()),
+    path('logout', UserLogoutAPIView.as_view()),
     
     # google auth 
     path('auth/google/login/url', GoogleLoginUrlView.as_view()),

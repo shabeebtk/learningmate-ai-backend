@@ -21,4 +21,5 @@ urlpatterns = [
     path('super-admin/', admin.site.urls),
     path('user/', include('accounts.urls')),
     path('learn/', include('learn.urls')),
+    path('ai-characters/', include('characters.urls')),
 ]

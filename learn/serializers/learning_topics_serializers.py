@@ -14,3 +14,14 @@ class LearningTopicSerializer(serializers.ModelSerializer):
         if obj.topic_image:
             return obj.topic_image.url  # full Cloudinary URL
         return None
+    
+    
+class LearningTopicMiniSerializer(serializers.ModelSerializer):
+    topic_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LearningTopic
+        fields = ['id', 'topic', 'topic_image']
+
+    def get_topic_image(self, obj):
+        return obj.topic_image.url if obj.topic_image else None

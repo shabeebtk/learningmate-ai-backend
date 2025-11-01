@@ -34,17 +34,29 @@ class GenerateQuestion(APIView):
 
         topic_name = topic.topic
         topic_category = topic.category.category
+        
+        # Get last 5 asked questions for this user and topic to avoid duplicate
+        user = request.user if request.user.is_authenticated else None
+        asked_questions = []
+        if user:
+            asked_questions = list(UserLearningHistory.objects.filter(
+                user=user,
+                topic=topic,
+                difficulty=difficulty
+            ).order_by('-created_at').values_list("question", flat=True)[:5])
+
+        avoid_text = "\n".join(f"- {q}" for q in asked_questions) if asked_questions else "none"
 
         prompt = f"""
         You are a friendly mentor. Ask one random theoretical question from the topic "{topic_name}" 
         in the category "{topic_category}" with "{difficulty}" difficulty. 
-
+        Avoid these previously asked questions:
+        [{avoid_text}]
         Instructions:
         1. Respond ONLY in JSON format with the following structure:
         {{
             "question": "<the question here as a string and do not put answer here>"
         }}
-
         2. Do NOT include any text, explanation, code blocks, or extra formatting outside the JSON.
         3. Make the question clear, concise, and suitable for an interview or learning assessment.
         """
