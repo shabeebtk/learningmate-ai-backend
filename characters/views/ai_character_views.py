@@ -10,7 +10,6 @@ from characters.serializers.ai_character_serializer import AiCharacterSerializer
 
 
 class ListAiCharacters(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         search = request.query_params.get("search")
@@ -43,7 +42,6 @@ class ListAiCharacters(APIView):
 
 
 class GetAiCharacterDetails(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, character_id):
         # Use select_related for performance (fetch topic in same query)

@@ -84,8 +84,8 @@ class AIChatMemory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "AI Character Chat"
-        verbose_name_plural = "AI Character Chats"
+        verbose_name = "AI Character Chat memory"
+        verbose_name_plural = "AI Character Chats Memories"
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["user", "ai_character"]),
