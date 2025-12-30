@@ -1,13 +1,10 @@
 import openai
 import json
 import re
-from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from accounts.serializers.user_serializers import UserSerializer
 from utils.response import response_data
 from learn.models import LearningTopic, AIModels, UserLearningHistory, UserTopicStatistics
 from learn.serializers.learning_history_serializer import UserLearningHistorySerializer

@@ -97,3 +97,17 @@ class UserTopicStatistics(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.topic.topic}: {self.total_score} points"
+    
+    
+class UserNotes(models.Model):
+    user = models.ForeignKey(MyUsers, on_delete=models.CASCADE, related_name="notes")
+    title = models.CharField(max_length=255, db_index=True)
+    content = models.TextField(null=True, blank=True) 
+    is_starred = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} - {self.title}"
