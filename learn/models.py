@@ -1,9 +1,12 @@
-from django.db import models
+from django.db import models, transaction
 from accounts.models import MyUsers
 from cloudinary.models import CloudinaryField
+from core.models import BaseUUIDModel
+from django.db.models import F
+
 # models here..
 
-class AIModels(models.Model):
+class AIModels(BaseUUIDModel):
     """Stores available AI models (e.g., ChatGPT, Claude..)."""
     name = models.CharField(max_length=100, unique=True, db_index=True)
     label = models.CharField(max_length=100, unique=True, db_index=True)
@@ -17,7 +20,7 @@ class AIModels(models.Model):
         return self.name
     
 
-class LearningCategory(models.Model):
+class LearningCategory(BaseUUIDModel):
     """Represents a learning category (e.g., Programming Languages)."""
     category = models.CharField(max_length=255, unique=True, db_index=True)
     category_image = CloudinaryField('image', folder="categories/", blank=True, null=True)
@@ -32,9 +35,16 @@ class LearningCategory(models.Model):
         return self.category
 
 
+
 class LearningTopic(models.Model):
-    """Represents a topic under a category (e.g., Python under Programming Languages)."""
-    category = models.ForeignKey(LearningCategory, on_delete=models.CASCADE,related_name="topics")
+    """
+    Represents a topic under a category (e.g., Python under Programming Languages).
+    """
+    category = models.ForeignKey(
+        "LearningCategory",
+        on_delete=models.CASCADE,
+        related_name="topics"
+    )
     topic = models.CharField(max_length=255, db_index=True)
     topic_image = CloudinaryField('image', folder="topics/", blank=True, null=True)
     description = models.TextField(blank=True)
@@ -49,7 +59,124 @@ class LearningTopic(models.Model):
         return f"{self.topic} ({self.category.category})"
 
 
-class UserLearningHistory(models.Model):
+class TopicNode(models.Model):
+    """
+    Represents a node inside a topic.
+    Can be Section or Concept.
+    """
+
+    LEVEL_SECTION = "section"
+    LEVEL_CONCEPT = "concept"
+
+    LEVEL_CHOICES = [
+        (LEVEL_SECTION, "Section"),
+        (LEVEL_CONCEPT, "Concept"),
+    ]
+
+    topic = models.ForeignKey(
+        LearningTopic,
+        on_delete=models.CASCADE,
+        related_name="nodes"
+    )
+
+    name = models.CharField(max_length=255, db_index=True)
+
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="children"
+    )
+
+    level = models.CharField(
+        max_length=30,
+        choices=LEVEL_CHOICES,
+        db_index=True
+    )
+
+    description = models.TextField(blank=True)
+
+    order = models.PositiveIntegerField(default=0)
+
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+
+            if self.pk:
+                old = TopicNode.objects.get(pk=self.pk)
+
+                # If parent changed → fix old siblings first
+                if old.parent != self.parent:
+                    TopicNode.objects.filter(
+                        topic=old.topic,
+                        parent=old.parent,
+                        order__gt=old.order
+                    ).update(order=F("order") - 1)
+
+                    # reset order for new group
+                    self.pk = None
+
+            if self.pk is None:
+                siblings = TopicNode.objects.filter(
+                    topic=self.topic,
+                    parent=self.parent
+                )
+
+                if self.order == 0:
+                    max_order = siblings.aggregate(
+                        models.Max("order")
+                    )["order__max"] or 0
+
+                    self.order = max_order + 1
+                else:
+                    siblings.filter(
+                        order__gte=self.order
+                    ).update(order=F("order") + 1)
+
+            else:
+                old = TopicNode.objects.get(pk=self.pk)
+
+                if old.order != self.order:
+                    siblings = TopicNode.objects.filter(
+                        topic=self.topic,
+                        parent=self.parent
+                    ).exclude(pk=self.pk)
+
+                    if self.order > old.order:
+                        siblings.filter(
+                            order__gt=old.order,
+                            order__lte=self.order
+                        ).update(order=F("order") - 1)
+                    else:
+                        siblings.filter(
+                            order__lt=old.order,
+                            order__gte=self.order
+                        ).update(order=F("order") + 1)
+
+            super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+
+            siblings = TopicNode.objects.filter(
+                topic=self.topic,
+                parent=self.parent,
+                order__gt=self.order
+            )
+
+            # Shift remaining siblings up
+            siblings.update(order=F("order") - 1)
+
+            super().delete(*args, **kwargs)
+
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("topic", "parent", "order")
+
+
+class UserLearningHistory(BaseUUIDModel):
     """Tracks user learning attempts for topics."""
     
     DIFFICULTY_EASY = 'easy'
@@ -81,7 +208,7 @@ class UserLearningHistory(models.Model):
         return f"{self.user} - {self.topic.topic} ({self.score})"
 
 
-class UserTopicStatistics(models.Model):
+class UserTopicStatistics(BaseUUIDModel):
     """Aggregated statistics of a user's performance on a specific topic."""
     user = models.ForeignKey(MyUsers, on_delete=models.CASCADE, related_name="topic_statistics")
     topic = models.ForeignKey(LearningTopic, on_delete=models.CASCADE, related_name="user_statistics")
@@ -99,7 +226,7 @@ class UserTopicStatistics(models.Model):
         return f"{self.user} - {self.topic.topic}: {self.total_score} points"
     
     
-class UserNotes(models.Model):
+class UserNotes(BaseUUIDModel):
     user = models.ForeignKey(MyUsers, on_delete=models.CASCADE, related_name="notes")
     title = models.CharField(max_length=255, db_index=True)
     content = models.TextField(null=True, blank=True) 

@@ -15,7 +15,7 @@ class GenerateQuestion(APIView):
 
     def get(self, request, topic_id):
         difficulty = request.query_params.get('difficulty', "easy").lower()
-
+        print('working ...')
         # Validate topic
         try:
             topic = LearningTopic.objects.get(id=topic_id)
@@ -23,6 +23,7 @@ class GenerateQuestion(APIView):
             return response_data(
                 success=False,
                 message="Topic not found",
+                status_code=400
             )
 
         # Validate difficulty
@@ -77,10 +78,14 @@ class GenerateQuestion(APIView):
             question_json = json.loads(gpt_content)
 
         except Exception as e:
+            print('Error generating question:', str(e))
             return response_data(
                 success=False,
                 message=f"Failed to generate question: {str(e)}"
             )
+        
+
+        print("Generated question:", question_json)
 
         return response_data(success=True, data={"question": question_json})
 
