@@ -1,7 +1,6 @@
 from django.contrib import admin
 from learn.models import (
     AIModels, LearningCategory, LearningTopic, TopicNode, UserLearningHistory, AssessmentQuestion, 
-    AssessmentAnswer, UserAssessments
 )
 # Register your models here.
 
@@ -56,44 +55,44 @@ class TopicNodeAdmin(admin.ModelAdmin):
 
 admin.site.register(UserLearningHistory)
 
-class AssessmentAnswerInline(admin.TabularInline):
-    model = AssessmentAnswer
-    extra = 0
-    readonly_fields = ("score", "evaluated_at")
+# class AssessmentAnswerInline(admin.TabularInline):
+#     model = AssessmentAnswer
+#     extra = 0
+#     readonly_fields = ("score", "evaluated_at")
 
 
-class AssessmentQuestionInline(admin.TabularInline):
-    model = AssessmentQuestion
-    extra = 0
+# class AssessmentQuestionInline(admin.TabularInline):
+#     model = AssessmentQuestion
+#     extra = 0
 
 
-@admin.register(UserAssessments)
-class UserAssessmentsAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "user",
-        "topic",
-        "assessment_type",
-        "difficulty",
-        "status",
-        "total_score",
-        "max_score",
-        "started_at",
-    )
-    list_filter = ("status", "difficulty", "assessment_type")
-    search_fields = ("user__email", "topic__name")
-    inlines = [AssessmentQuestionInline]
+# @admin.register(UserAssessments)
+# class UserAssessmentsAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "id",
+#         "user",
+#         "topic",
+#         "assessment_type",
+#         "difficulty",
+#         "status",
+#         "total_score",
+#         "max_score",
+#         "started_at",
+#     )
+#     list_filter = ("status", "difficulty", "assessment_type")
+#     search_fields = ("user__email", "topic__name")
+#     inlines = [AssessmentQuestionInline]
 
 
-@admin.register(AssessmentQuestion)
-class AssessmentQuestionAdmin(admin.ModelAdmin):
-    list_display = ("id", "assessment", "question_type", "max_score")
-    list_filter = ("question_type",)
-    search_fields = ("question_text",)
-    inlines = [AssessmentAnswerInline]
+# @admin.register(AssessmentQuestion)
+# class AssessmentQuestionAdmin(admin.ModelAdmin):
+#     list_display = ("id", "assessment", "question_type", "max_score")
+#     list_filter = ("question_type",)
+#     search_fields = ("question_text",)
+#     inlines = [AssessmentAnswerInline]
 
 
-@admin.register(AssessmentAnswer)
-class AssessmentAnswerAdmin(admin.ModelAdmin):
-    list_display = ("id", "question", "score", "evaluated_at")
-    search_fields = ("user_answer",)
+# @admin.register(AssessmentAnswer)
+# class AssessmentAnswerAdmin(admin.ModelAdmin):
+#     list_display = ("id", "question", "score", "evaluated_at")
+#     search_fields = ("user_answer",)

@@ -36,7 +36,7 @@ class LearningCategory(BaseUUIDModel):
 
 
 
-class LearningTopic(models.Model):
+class LearningTopic(BaseUUIDModel):
     """
     Represents a topic under a category (e.g., Python under Programming Languages).
     """
@@ -59,7 +59,7 @@ class LearningTopic(models.Model):
         return f"{self.topic} ({self.category.category})"
 
 
-class TopicNode(models.Model):
+class TopicNode(BaseUUIDModel):
     """
     Represents a node inside a topic.
     Can be Section or Concept.
@@ -100,6 +100,17 @@ class TopicNode(models.Model):
     order = models.PositiveIntegerField(default=0)
 
     is_active = models.BooleanField(default=True)
+
+    # def clean(self):
+    #     if self.level == self.LEVEL_SECTION and self.parent:
+    #         raise ValidationError("Section cannot have a parent")
+
+    #     if self.level == self.LEVEL_CONCEPT:
+    #         if not self.parent:
+    #             raise ValidationError("Concept must belong to a section")
+
+    #         if self.parent.level != self.LEVEL_SECTION:
+    #             raise ValidationError("Concept parent must be a section")
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
@@ -174,6 +185,9 @@ class TopicNode(models.Model):
     class Meta:
         ordering = ["order"]
         unique_together = ("topic", "parent", "order")
+        indexes = [
+            models.Index(fields=["topic", "parent"]),
+        ]
 
 
 class UserLearningHistory(BaseUUIDModel):
@@ -238,3 +252,7 @@ class UserNotes(BaseUUIDModel):
 
     def __str__(self):
         return f"{self.user} - {self.title}"
+
+
+class AssessmentQuestion(models.Model):
+    pass

@@ -2,7 +2,7 @@ from django.db import models
 from learn.models import LearningTopic
 from cloudinary.models import CloudinaryField
 from accounts.models import MyUsers
-
+from core.models import BaseUUIDModel
 # Create your models here.
 
 '''
@@ -18,18 +18,16 @@ from accounts.models import MyUsers
 
 '''
 
-class AICharacter(models.Model):
-    AI_ROLE_FRIEND = 'friend'
+class AICharacter(BaseUUIDModel):
     AI_ROLE_MENTOR = 'mentor'
     
     AI_ROLES_CHOICES = [
-        (AI_ROLE_FRIEND, "Friend"),
         (AI_ROLE_MENTOR, "Mentor"),
     ]
     
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(LearningTopic, on_delete=models.CASCADE)
-    role = models.CharField(max_length=50, choices=AI_ROLES_CHOICES)  # e.g. "Mentor", "Buddy"
+    role = models.CharField(max_length=50, choices=AI_ROLES_CHOICES, default=AI_ROLE_MENTOR)  # e.g. "Mentor", "Buddy"
     description = models.TextField(blank=True, null=True)
     personality = models.JSONField(default=dict, blank=True, null=True)
     avatar = CloudinaryField('image', folder="ai_characters/avatar/", blank=True, null=True)
@@ -48,7 +46,7 @@ class AICharacter(models.Model):
         return f"{self.name} ({self.role})  --> topic : {self.topic.topic if self.topic else "no topic selected"}"
     
     
-class AICharacterChatMessages(models.Model):
+class AICharacterChatMessages(BaseUUIDModel):
     SENDER_USER = 'user'
     SENDER_AI = 'ai'
 
@@ -76,7 +74,7 @@ class AICharacterChatMessages(models.Model):
 
     
 
-class AIChatMemory(models.Model):
+class AIChatMemory(BaseUUIDModel):
     user = models.ForeignKey(MyUsers, on_delete=models.CASCADE)
     ai_character = models.ForeignKey(AICharacter, on_delete=models.SET_NULL, null=True)
     summary = models.TextField()

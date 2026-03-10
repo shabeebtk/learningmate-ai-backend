@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
 from cloudinary.models import CloudinaryField
-
+from core.models import BaseUUIDModel
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
@@ -27,7 +27,7 @@ class CustomUserManager(BaseUserManager):
     
     
 
-class MyUsers(AbstractUser):
+class MyUsers(BaseUUIDModel, AbstractUser):
     username = models.CharField(max_length=100, unique=True, null=False, blank=False)
     email = models.EmailField(max_length=100, unique=True)
     is_verified = models.BooleanField(default=False)
@@ -63,7 +63,7 @@ class MyUsers(AbstractUser):
 def profile_img_upload_to(instance, filename):
     return f'users/profile/{instance.user.id}/{filename}'
 
-class UserProfile(models.Model):
+class UserProfile(BaseUUIDModel):
     user = models.OneToOneField(MyUsers, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(max_length=100, blank=True, null=True)
     profile_img = CloudinaryField('image', folder="users/profile", blank=True, null=True)
