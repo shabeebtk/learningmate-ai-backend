@@ -15,7 +15,7 @@ urlpatterns = [
     path('topics/list', ListLearningTopics.as_view()),
     path('topic/<int:topic_id>/details', TopicDetailView.as_view()),
     
-    path('generate/<int:topic_id>/question', GenerateQuestion.as_view()),
+    path('generate/<uuid:topic_id>/question', GenerateQuestion.as_view()),
     path('question/answer/result', AnswerResults.as_view()),
     path('topic/<int:topic_id>/history', ListUserLearningHistory.as_view()),
     

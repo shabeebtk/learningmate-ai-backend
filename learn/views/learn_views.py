@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from utils.response import response_data
 from learn.models import LearningTopic, AIModels, UserLearningHistory, UserTopicStatistics
 from learn.serializers.learning_history_serializer import UserLearningHistorySerializer
-
+from llm.llm_client import LLMClient
 
 class GenerateQuestion(APIView):
     permission_classes = []
@@ -46,7 +46,7 @@ class GenerateQuestion(APIView):
         avoid_text = "\n".join(f"- {q}" for q in asked_questions) if asked_questions else "none"
 
         prompt = f"""
-        You are a friendly mentor. Ask one random theoretical question from the topic "{topic_name}" 
+        You are a friendly mentor. Ask one random unique theoretical question from the topic "{topic_name}" 
         in the category "{topic_category}" with "{difficulty}" difficulty. 
         Avoid these previously asked questions:
         [{avoid_text}]
@@ -58,24 +58,16 @@ class GenerateQuestion(APIView):
         2. Do NOT include any text, explanation, code blocks, or extra formatting outside the JSON.
         3. Make the question clear, concise, and suitable for an interview or learning assessment.
         """
-
-        openai.api_key = settings.OPENAI_API_KEY
-
+    
         try:
-            response = openai.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "You are a helpful, friendly mentor."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=150
+            response = LLMClient.generate(
+                provider='gemini',
+                model='gemini-3.1-flash-lite-preview',
+                prompt=prompt
             )
-
-            gpt_content = response.choices[0].message.content
-            gpt_content = re.sub(r"^```json|```$", "", gpt_content.strip(), flags=re.MULTILINE).strip()
-
-            question_json = json.loads(gpt_content)
+            print(response)
+            # question_json = json.loads(response)
+            question_json = response
 
         except Exception as e:
             print('Error generating question:', str(e))
